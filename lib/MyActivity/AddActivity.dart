@@ -29,8 +29,11 @@ class _AddActivityState extends State<AddActivity> {
   TextEditingController inputCostController = TextEditingController();
   TextEditingController revenueController = TextEditingController();
   TextEditingController expenseController = TextEditingController();
+  TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   final Set<String> selectedActivities = {};
+  final Set<String> selectedActivitiesOne = {};
   final TextEditingController othersController = TextEditingController();
   final TextEditingController GuestDesignationController =
       TextEditingController();
@@ -105,6 +108,19 @@ class _AddActivityState extends State<AddActivity> {
     "Floriculture",
     "Snacks making",
     "Others"
+  ];
+final List<String> NameOFActivities = [
+      "Unnati Calendar",
+      'Immunization VHSND',
+      'Career Counselling',
+      'Livelihood Data Collection/FU',
+      'Training Program',
+      'Exposure Visit',
+      'Awareness Program',
+      'CLC visit/FU',
+      'DLC visit/FU',
+      'Other Activities (if any)'
+  //   ],
   ];
 
   void initState() {
@@ -195,551 +211,685 @@ class _AddActivityState extends State<AddActivity> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDropdownActivity(
-              label: 'Name Of Activity',
-              items: [
-                'Select Activity',
-                "Unnati Calendar",
-                'Immunization VHSND',
-                'Career Counselling',
-                'Livelihood Data Collection/FU',
-                'Training Program',
-                'Exposure Visit',
-                'Awareness Program',
-                'CLC visit/FU',
-                'DLC visit/FU',
-                'Other Activities (if any)'
-              ],
-              fieldKey: 'activity',
-              selectedValue: _selectedActivity,
-              onChanged: (value) {
-                setState(() {
-                  _selectedActivity = (value == 'Select Activity') ? '' : value;
-                  showLivelihoodFields =
-                      _selectedActivity == 'Livelihood Data Collection/FU';
-                  showUnnati = _selectedActivity == 'Unnati Calendar';
-                });
-              },
-            ),
-            if (showLivelihoodFields) ...[
-              Card(
-                  elevation: 3,
-                  color: Colors.white,
-                  child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          const Text(
-                            'Location',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          DropdownButtonFormField<String>(
-                            value: selectedGP,
-                            //style: TextStyle(fontSize: 16),
-                            decoration: const InputDecoration(
-                              hintText: 'Select GP',
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 0, horizontal: 8),
-                            ),
-                            items: GPList.map((String value) => DropdownMenuItem(
-                                value: value, child: Text(value))).toList(),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                selectedGP = newValue;
-                                selectedVillage = null;
-                                selectedSHG = null;
-                              });
-                            },
-                          ),
+            // _buildDropdownActivity(
+            //   label: 'Name Of Activity',
+            //   items: [
+            //     'Select Activity',
+            //     "Unnati Calendar",
+            //     'Immunization VHSND',
+            //     'Career Counselling',
+            //     'Livelihood Data Collection/FU',
+            //     'Training Program',
+            //     'Exposure Visit',
+            //     'Awareness Program',
+            //     'CLC visit/FU',
+            //     'DLC visit/FU',
+            //     'Other Activities (if any)'
+            //   ],
+            //   fieldKey: 'activity',
+            //   selectedValue: _selectedActivity,
+            //   onChanged: (value) {
+            //     setState(() {
+            //       _selectedActivity = (value == 'Select Activity') ? '' : value;
+            //       showLivelihoodFields =
+            //           _selectedActivity == 'Livelihood Data Collection/FU';
+            //       showUnnati = _selectedActivity == 'Unnati Calendar';
+            //     });
+            //   },
+            // ),
 
-                          const SizedBox(height: 5),
 
-                          // Block Dropdown
-                          DropdownButtonFormField<String>(
-                            value: selectedSHG,
-                            decoration: const InputDecoration(
-                              hintText: 'Select Village',
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 4, horizontal: 8),
-                            ),
-                            items: selectedGP != null
-                                ? villageList[selectedGP]!
-                                .map((String value) => DropdownMenuItem(
-                                value: value, child: Text(value)))
-                                .toList()
-                                : [],
-                            onChanged: selectedGP != null
-                                ? (String? newValue) {
-                              setState(() {
-                                selectedSHG = newValue;
-                                selectedVillage = null;
-                              });
-                            }
-                                : null,
-                          ),
-                          const SizedBox(height: 5),
-
-                          // Village Dropdown
-                          DropdownButtonFormField<String>(
-                            value: selectedVillage,
-                            decoration: const InputDecoration(
-                              hintText: 'Select SHG',
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 4, horizontal: 8),
-                            ),
-                            items: selectedSHG != null
-                                ? SHGList[selectedSHG]!
-                                .map((String value) => DropdownMenuItem(
-                                value: value, child: Text(value)))
-                                .toList()
-                                : [],
-                            onChanged: selectedSHG != null
-                                ? (String? newValue) {
-                              setState(() {
-                                selectedVillage = newValue;
-                              });
-                            }
-                                : null,
-                          ),
-                        ],
-                      ))),
-              Card(
-                elevation: 4,
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Select Time:'),
-
-                        // Padding(
-                        //   padding: const EdgeInsets.all(8.0),
-                        GestureDetector(
-                          onTap: () => _selectTimeRange(context),
-                          child: AbsorbPointer(
-                            child: TextFormField(
-                              readOnly: true,
-                              decoration: InputDecoration(
-                                // labelText: 'Time Range',
-                                hintText: 'Select Start and End Time',
-                                suffixIcon: Icon(Icons.access_time),
-                                border: OutlineInputBorder(),
-                              ),
-                              controller: TextEditingController(
-                                text: (_startTime != null && _endTime != null)
-                                    ? '${_startTime!.format(context)} - ${_endTime!.format(context)}'
+            Card(
+              elevation: 3,
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Select Activities',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 6),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isDropdownOpen = !_isDropdownOpen;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _selectedActivity != null
+                                    ? 'Select Activities'
                                     : '',
+                                style: const TextStyle(fontSize: 14),
                               ),
                             ),
-                          ),
-                        ),
-                      ]),
-                ),
-              ),
-              Card(
-                elevation: 3,
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Name of the Business Holder',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: TentativeAmountController,
-                        decoration: InputDecoration(
-                          hintText: 'Enter name',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 4,
-                              horizontal: 8), // yahan vertical padding kam karo
+                            Icon(
+                              _isDropdownOpen
+                                  ? Icons.arrow_drop_up
+                                  : Icons.arrow_drop_down,
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              Card(
-                elevation: 3,
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Father's Name/ Husband Name",
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        // controller: EventNameController,
-                        decoration: InputDecoration(
-                          hintText: "Enter Father's Name/Husband Name",
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 4,
-                              horizontal: 8), // yahan vertical padding kam karo
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Card(
-                elevation: 3,
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Member Name",
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        // controller: EventNameController,
-                        decoration: InputDecoration(
-                          hintText: "Enter Member Name",
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 4,
-                              horizontal: 8), // yahan vertical padding kam karo
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // Card(
-              //   elevation: 3,
-              //   color: Colors.white,
-              //   child: Padding(
-              //     padding: const EdgeInsets.all(8.0),
-              //     child: Column(
-              //       crossAxisAlignment: CrossAxisAlignment.start,
-              //       children: [
-              //         const Text(
-              //           "Select Activities",
-              //           style: TextStyle(
-              //               fontSize: 18, fontWeight: FontWeight.bold),
-              //         ),
-              //         const SizedBox(height: 12),
-              //         ...activities.map((activity) => CheckboxListTile(
-              //               title: Text(activity),
-              //               value: selectedActivities.contains(activity),
-              //               onChanged: (bool? value) {
-              //                 setState(() {
-              //                   if (value == true) {
-              //                     selectedActivities.add(activity);
-              //                   } else {
-              //                     selectedActivities.remove(activity);
-              //                   }
-              //                 });
-              //               },
-              //               controlAffinity: ListTileControlAffinity.leading,
-              //             )),
-              //         const SizedBox(height: 12),
-              //         if (selectedActivities.contains('Others'))...[
-              //         TextField(
-              //           controller: othersController,
-              //           decoration: const InputDecoration(
-              //             hintText: "Enter other activity",
-              //             border: OutlineInputBorder(),
-              //             contentPadding:
-              //                 EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              //           ),
-              //         )]
-              //       ],
-              //     ),
-              //   ),
-              // ),
+                    ),
 
-              Card(
-                elevation: 3,
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Select Activities',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 6),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isDropdownOpen = !_isDropdownOpen;
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  selectedActivities.isEmpty
-                                      ? 'Select Activities'
-                                      : selectedActivities.join(', '),
-                                  style: const TextStyle(fontSize: 14),
+                    if (_isDropdownOpen)
+                      Container(
+                        margin: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Column(
+                          children: [
+                            TextField(
+                              controller: _searchController,
+                              decoration: const InputDecoration(
+                                hintText: 'Search activities',
+                                prefixIcon: Icon(Icons.search),
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                              onChanged: (value) {
+                                setState(() {
+                                  _searchQuery = value.toLowerCase();
+                                  showLivelihoodFields =
+                                      _selectedActivity == 'Livelihood Data Collection/FU';
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              height: 200,
+                              child: ListView(
+                                children: NameOFActivities
+                                    .where((name) =>
+                                    name.toLowerCase().contains(_searchQuery))
+                                    .map((name) {
+                                  return CheckboxListTile(
+                                    title: Text(name),
+                                    value: selectedActivities.contains(name),
+                                    controlAffinity: ListTileControlAffinity.leading,
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        if (value == true) {
+                                          _selectedActivity;
+                                        } else {
+                                          _selectedActivity;
+                                        }
+                                      });
+                                    },
+                                  );
+                                }).toList(),
+                              ),
+
+                            ),
+                            if (showLivelihoodFields) ...[
+                              Card(
+                                  elevation: 3,
+                                  color: Colors.white,
+                                  child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        children: [
+                                          const Text(
+                                            'Location',
+                                            style: TextStyle(
+                                                fontSize: 18, fontWeight: FontWeight.bold),
+                                          ),
+                                          DropdownButtonFormField<String>(
+                                            value: selectedGP,
+                                            //style: TextStyle(fontSize: 16),
+                                            decoration: const InputDecoration(
+                                              hintText: 'Select GP',
+                                              border: OutlineInputBorder(),
+                                              contentPadding: EdgeInsets.symmetric(
+                                                  vertical: 0, horizontal: 8),
+                                            ),
+                                            items: GPList.map((String value) => DropdownMenuItem(
+                                                value: value, child: Text(value))).toList(),
+                                            onChanged: (String? newValue) {
+                                              setState(() {
+                                                selectedGP = newValue;
+                                                selectedVillage = null;
+                                                selectedSHG = null;
+                                              });
+                                            },
+                                          ),
+
+                                          const SizedBox(height: 5),
+
+                                          // Block Dropdown
+                                          DropdownButtonFormField<String>(
+                                            value: selectedSHG,
+                                            decoration: const InputDecoration(
+                                              hintText: 'Select Village',
+                                              border: OutlineInputBorder(),
+                                              contentPadding: EdgeInsets.symmetric(
+                                                  vertical: 4, horizontal: 8),
+                                            ),
+                                            items: selectedGP != null
+                                                ? villageList[selectedGP]!
+                                                .map((String value) => DropdownMenuItem(
+                                                value: value, child: Text(value)))
+                                                .toList()
+                                                : [],
+                                            onChanged: selectedGP != null
+                                                ? (String? newValue) {
+                                              setState(() {
+                                                selectedSHG = newValue;
+                                                selectedVillage = null;
+                                              });
+                                            }
+                                                : null,
+                                          ),
+                                          const SizedBox(height: 5),
+
+                                          // Village Dropdown
+                                          DropdownButtonFormField<String>(
+                                            value: selectedVillage,
+                                            decoration: const InputDecoration(
+                                              hintText: 'Select SHG',
+                                              border: OutlineInputBorder(),
+                                              contentPadding: EdgeInsets.symmetric(
+                                                  vertical: 4, horizontal: 8),
+                                            ),
+                                            items: selectedSHG != null
+                                                ? SHGList[selectedSHG]!
+                                                .map((String value) => DropdownMenuItem(
+                                                value: value, child: Text(value)))
+                                                .toList()
+                                                : [],
+                                            onChanged: selectedSHG != null
+                                                ? (String? newValue) {
+                                              setState(() {
+                                                selectedVillage = newValue;
+                                              });
+                                            }
+                                                : null,
+                                          ),
+                                        ],
+                                      ))),
+                              Card(
+                                elevation: 4,
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Select Time:'),
+
+                                        // Padding(
+                                        //   padding: const EdgeInsets.all(8.0),
+                                        GestureDetector(
+                                          onTap: () => _selectTimeRange(context),
+                                          child: AbsorbPointer(
+                                            child: TextFormField(
+                                              readOnly: true,
+                                              decoration: InputDecoration(
+                                                // labelText: 'Time Range',
+                                                hintText: 'Select Start and End Time',
+                                                suffixIcon: Icon(Icons.access_time),
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              controller: TextEditingController(
+                                                text: (_startTime != null && _endTime != null)
+                                                    ? '${_startTime!.format(context)} - ${_endTime!.format(context)}'
+                                                    : '',
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ]),
                                 ),
                               ),
-                              Icon(
-                                _isDropdownOpen
-                                    ? Icons.arrow_drop_up
-                                    : Icons.arrow_drop_down,
+                              Card(
+                                elevation: 3,
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Name of the Business Holder',
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        controller: TentativeAmountController,
+                                        decoration: InputDecoration(
+                                          hintText: 'Enter name',
+                                          border: OutlineInputBorder(),
+                                          contentPadding: EdgeInsets.symmetric(
+                                              vertical: 4,
+                                              horizontal: 8), // yahan vertical padding kam karo
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
+                              Card(
+                                elevation: 3,
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        "Father's Name/ Husband Name",
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        // controller: EventNameController,
+                                        decoration: InputDecoration(
+                                          hintText: "Enter Father's Name/Husband Name",
+                                          border: OutlineInputBorder(),
+                                          contentPadding: EdgeInsets.symmetric(
+                                              vertical: 4,
+                                              horizontal: 8), // yahan vertical padding kam karo
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Card(
+                                elevation: 3,
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        "Member Name",
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        // controller: EventNameController,
+                                        decoration: InputDecoration(
+                                          hintText: "Enter Member Name",
+                                          border: OutlineInputBorder(),
+                                          contentPadding: EdgeInsets.symmetric(
+                                              vertical: 4,
+                                              horizontal: 8), // yahan vertical padding kam karo
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // Card(
+                              //   elevation: 3,
+                              //   color: Colors.white,
+                              //   child: Padding(
+                              //     padding: const EdgeInsets.all(8.0),
+                              //     child: Column(
+                              //       crossAxisAlignment: CrossAxisAlignment.start,
+                              //       children: [
+                              //         const Text(
+                              //           "Select Activities",
+                              //           style: TextStyle(
+                              //               fontSize: 18, fontWeight: FontWeight.bold),
+                              //         ),
+                              //         const SizedBox(height: 12),
+                              //         ...activities.map((activity) => CheckboxListTile(
+                              //               title: Text(activity),
+                              //               value: selectedActivities.contains(activity),
+                              //               onChanged: (bool? value) {
+                              //                 setState(() {
+                              //                   if (value == true) {
+                              //                     selectedActivities.add(activity);
+                              //                   } else {
+                              //                     selectedActivities.remove(activity);
+                              //                   }
+                              //                 });
+                              //               },
+                              //               controlAffinity: ListTileControlAffinity.leading,
+                              //             )),
+                              //         const SizedBox(height: 12),
+                              //         if (selectedActivities.contains('Others'))...[
+                              //         TextField(
+                              //           controller: othersController,
+                              //           decoration: const InputDecoration(
+                              //             hintText: "Enter other activity",
+                              //             border: OutlineInputBorder(),
+                              //             contentPadding:
+                              //                 EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              //           ),
+                              //         )]
+                              //       ],
+                              //     ),
+                              //   ),
+                              // ),
+
+                              Card(
+                                elevation: 3,
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Select Activities',
+                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            _isDropdownOpen = !_isDropdownOpen;
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(color: Colors.grey),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  selectedActivities.isEmpty
+                                                      ? 'Select Activities'
+                                                      : selectedActivities.join(', '),
+                                                  style: const TextStyle(fontSize: 14),
+                                                ),
+                                              ),
+                                              Icon(
+                                                _isDropdownOpen
+                                                    ? Icons.arrow_drop_up
+                                                    : Icons.arrow_drop_down,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+
+                                      if (_isDropdownOpen)
+                                        Container(
+                                          margin: const EdgeInsets.only(top: 8),
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(color: Colors.grey.shade300),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              TextField(
+                                                controller: _searchController,
+                                                decoration: const InputDecoration(
+                                                  hintText: 'Search activities',
+                                                  prefixIcon: Icon(Icons.search),
+                                                  border: OutlineInputBorder(),
+                                                  isDense: true,
+                                                ),
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    _searchQuery = value.toLowerCase();
+                                                  });
+                                                },
+                                              ),
+                                              const SizedBox(height: 8),
+                                              SizedBox(
+                                                height: 200,
+                                                child: ListView(
+                                                  children: activities
+                                                      .where((name) =>
+                                                      name.toLowerCase().contains(_searchQuery))
+                                                      .map((name) {
+                                                    return CheckboxListTile(
+                                                      title: Text(name),
+                                                      value: selectedActivities.contains(name),
+                                                      controlAffinity: ListTileControlAffinity.leading,
+                                                      onChanged: (bool? value) {
+                                                        setState(() {
+                                                          if (value == true) {
+                                                            selectedActivities.add(name);
+                                                          } else {
+                                                            selectedActivities.remove(name);
+                                                          }
+                                                        });
+                                                      },
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+
+
+                              Card(
+                                elevation: 3,
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Remarks',
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        // controller: ObservationController,
+                                        maxLines: null,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.allow(RegExp(
+                                              r'[a-zA-Z\s]')), // ONLY allows letters and space
+                                        ],
+                                        decoration: InputDecoration(
+                                          hintText: 'Enter remarks',
+                                          border: OutlineInputBorder(),
+                                          contentPadding:
+                                          EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '$wordCount / 100 words',
+                                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+
+                              Card(
+                                elevation: 4,
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Row(
+                                        children: [
+                                          Text('Date of Monitoring:'),
+                                          SizedBox(width: 4),
+                                        ],
+                                      ),
+                                      TextFormField(
+                                        controller: TextEditingController(
+                                          text: _selectedDate != null
+                                              ? DateFormat('dd-MM-yyyy').format(_selectedDate!)
+                                              : '',
+                                        ),
+                                        readOnly: true,
+                                        decoration: const InputDecoration(
+                                          hintText: "Select Date",
+                                          suffixIcon: Icon(Icons.calendar_month),
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        onTap: () => _selectDated(context),
+                                      ),
+                                      const SizedBox(height: 20),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Input Cost Card
+                                  Card(
+                                    elevation: 3,
+                                    color: Colors.white,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text("Input Cost",
+                                              style: TextStyle(fontSize: 14)),
+                                          const SizedBox(height: 8),
+                                          TextFormField(
+                                            controller: inputCostController,
+                                            keyboardType: TextInputType.number,
+                                            onChanged: (_) => calculateProfit(),
+                                            decoration: InputDecoration(
+                                              hintText: "Enter amount",
+                                              border: OutlineInputBorder(),
+                                              contentPadding: EdgeInsets.symmetric(
+                                                  vertical: 4, horizontal: 8),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Total Revenue Card
+                                  Card(
+                                    elevation: 3,
+                                    color: Colors.white,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text("Total Revenue",
+                                              style: TextStyle(fontSize: 14)),
+                                          const SizedBox(height: 8),
+                                          TextFormField(
+                                            controller: revenueController,
+                                            keyboardType: TextInputType.number,
+                                            onChanged: (_) => calculateProfit(),
+                                            decoration: InputDecoration(
+                                              hintText: "Enter amount",
+                                              border: OutlineInputBorder(),
+                                              contentPadding: EdgeInsets.symmetric(
+                                                  vertical: 4, horizontal: 8),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Expenses Card
+                                  Card(
+                                    elevation: 3,
+                                    color: Colors.white,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text("Expenses (Rent/Transport/Salary, etc.)",
+                                              style: TextStyle(fontSize: 14)),
+                                          const SizedBox(height: 8),
+                                          TextFormField(
+                                            controller: expenseController,
+                                            keyboardType: TextInputType.number,
+                                            onChanged: (_) => calculateProfit(),
+                                            decoration: InputDecoration(
+                                              hintText: "Enter amount",
+                                              border: OutlineInputBorder(),
+                                              contentPadding: EdgeInsets.symmetric(
+                                                  vertical: 4, horizontal: 8),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Profit Card
+                                  Card(
+                                    elevation: 3,
+                                    color: Colors.white,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text("Profit / Income",
+                                              style: TextStyle(fontSize: 14)),
+                                          const SizedBox(height: 8),
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 12, horizontal: 8),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(color: Colors.grey),
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: SizedBox(
+                                              width: double.infinity,
+                                              child: Text(
+                                                "₹ ${profit.toStringAsFixed(2)}",
+                                                style: const TextStyle(
+                                                    fontSize: 14, fontWeight: FontWeight.w600),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
                             ],
-                          ),
+                          ],
                         ),
                       ),
-
-                      if (_isDropdownOpen)
-                        Container(
-                          height: 200, // Adjust height as needed
-                          margin: const EdgeInsets.only(top: 8),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: ListView(
-                            shrinkWrap: true,
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            children: activities.map((name) {
-                              return CheckboxListTile(
-                                title: Text(name),
-                                value: selectedActivities.contains(name),
-                                controlAffinity: ListTileControlAffinity.leading,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    if (value == true) {
-                                      selectedActivities.add(name);
-                                    } else {
-                                      selectedActivities.remove(name);
-                                    }
-                                  });
-                                },
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
-
-              Card(
-                elevation: 3,
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Remarks',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        // controller: ObservationController,
-                        maxLines: null,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(
-                              r'[a-zA-Z\s]')), // ONLY allows letters and space
-                        ],
-                        decoration: InputDecoration(
-                          hintText: 'Enter remarks',
-                          border: OutlineInputBorder(),
-                          contentPadding:
-                              EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '$wordCount / 100 words',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            ),
 
 
-              Card(
-                elevation: 4,
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Text('Date of Monitoring:'),
-                          SizedBox(width: 4),
-                        ],
-                      ),
-                      TextFormField(
-                        controller: TextEditingController(
-                          text: _selectedDate != null
-                              ? DateFormat('dd-MM-yyyy').format(_selectedDate!)
-                              : '',
-                        ),
-                        readOnly: true,
-                        decoration: const InputDecoration(
-                          hintText: "Select Date",
-                          suffixIcon: Icon(Icons.calendar_month),
-                          border: OutlineInputBorder(),
-                        ),
-                        onTap: () => _selectDated(context),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                ),
-              ),
-
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Input Cost Card
-                  Card(
-                    elevation: 3,
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Input Cost",
-                              style: TextStyle(fontSize: 14)),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: inputCostController,
-                            keyboardType: TextInputType.number,
-                            onChanged: (_) => calculateProfit(),
-                            decoration: InputDecoration(
-                              hintText: "Enter amount",
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 4, horizontal: 8),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Total Revenue Card
-                  Card(
-                    elevation: 3,
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Total Revenue",
-                              style: TextStyle(fontSize: 14)),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: revenueController,
-                            keyboardType: TextInputType.number,
-                            onChanged: (_) => calculateProfit(),
-                            decoration: InputDecoration(
-                              hintText: "Enter amount",
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 4, horizontal: 8),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Expenses Card
-                  Card(
-                    elevation: 3,
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Expenses (Rent/Transport/Salary, etc.)",
-                              style: TextStyle(fontSize: 14)),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: expenseController,
-                            keyboardType: TextInputType.number,
-                            onChanged: (_) => calculateProfit(),
-                            decoration: InputDecoration(
-                              hintText: "Enter amount",
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 4, horizontal: 8),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Profit Card
-                  Card(
-                    elevation: 3,
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Profit / Income",
-                              style: TextStyle(fontSize: 14)),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 8),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: Text(
-                                "₹ ${profit.toStringAsFixed(2)}",
-                                style: const TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            ],
             if(showUnnati)...[
               _buildDropdownUnnatiActivity(
                 label: 'Unnati Calendar Activity',
